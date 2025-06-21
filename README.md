@@ -34,7 +34,10 @@ This is a sample Go application using the Gin framework that connects to a Mongo
     ```
     Replace `"your_mongodb_connection_string_here"` with your actual MongoDB URI.
 
-    **For Local Development (using Docker):**
+    **Switching Connection Strings:**
+    You can easily switch between a local MongoDB (via Docker) and a cloud MongoDB (like Atlas) by changing the `MONGODB_URI` value in your `.env` file.
+
+    **Example for Local Development (using Docker):**
     The `docker-compose.yml` file included in this project will set up a local MongoDB container.
     The default URI for this local instance is:
     `MONGODB_URI="mongodb://localhost:27017/mydatabase"`
@@ -42,8 +45,13 @@ This is a sample Go application using the Gin framework that connects to a Mongo
     If you modify `docker-compose.yml` to include a username and password (e.g., `MONGO_INITDB_ROOT_USERNAME: myuser`, `MONGO_INITDB_ROOT_PASSWORD: mypassword`), your URI would look like:
     `MONGODB_URI="mongodb://myuser:mypassword@localhost:27017/mydatabase?authSource=admin"`
 
-    **For Cloud MongoDB (e.g., MongoDB Atlas):**
-    `MONGODB_URI="mongodb+srv://<username>:<password>@<cluster-url>/<database_name>?retryWrites=true&w=majority"`
+    **Example for Cloud MongoDB (e.g., MongoDB Atlas):**
+    `MONGODB_URI="mongodb+srv://<username>:<password>@<cluster-url>/<database_name>?retryWrites=true&w=majority&appName=<AppName>"`
+    (Replace placeholders with your actual Atlas credentials and app name).
+
+    **Security Note on IP Whitelisting and Credentials:**
+    - If using MongoDB Atlas and whitelisting IPs, using `0.0.0.0/0` (allow access from anywhere) is convenient for development but significantly increases security risks. For production, always restrict access to specific, known IP addresses or use VPC peering / PrivateLink.
+    - Avoid committing sensitive credentials directly into your `.env` file if the file itself is not securely managed or is shared. Prefer injecting secrets through your deployment environment's mechanisms.
 
 ## Running the Application
 

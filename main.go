@@ -16,11 +16,14 @@ import (
 var mongoClient *mongo.Client
 
 func main() {
+	log.Println("Application starting...")
 	var err error
+	log.Println("Attempting to connect to database...")
 	mongoClient, err = db.ConnectDB()
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatalf("FATAL: Failed to connect to MongoDB after setup in db.ConnectDB(): %v", err)
 	}
+	log.Println("Database connection successful.")
 
 	// Disconnect from MongoDB when the application closes
 	// This part is a bit tricky with Gin's default Run() as it blocks.
@@ -60,5 +63,8 @@ func main() {
 		})
 	})
 
-	r.Run() // listen and serve on 0.0.0.0:8080
+	log.Println("Starting Gin server on 0.0.0.0:8080...")
+	if err := r.Run(); err != nil {
+		log.Fatalf("FATAL: Gin server failed to start: %v", err)
+	}
 }

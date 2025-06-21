@@ -14,32 +14,48 @@ import (
 
 // ConnectDB loads environment variables and connects to MongoDB
 func ConnectDB() (*mongo.Client, error) {
-	// Load .env file
+	log.Println("Attempting to load .env file...")
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found, using environment variables")
+		log.Println("Warning: No .env file found or error loading it. Will rely on existing environment variables. Error:", err)
+	} else {
+		log.Println(".env file loaded successfully (if present).")
 	}
 
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See LReadME.md for more info")
+		log.Fatal("FATAL: 'MONGODB_URI' environmental variable is not set. Please set it in .env or your environment. See README.md for more info.")
 	}
+	// Avoid logging the full URI with password in production, but for this debugging it's fine.
+	log.Println("MONGODB_URI found. Attempting to connect...")
 
+
+	log.Println("Creating new MongoDB client...")
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
+		log.Printf("Error creating MongoDB client: %v\n", err)
 		return nil, err
 	}
 
+	log.Println("Connecting to MongoDB (timeout 10s)...")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	err = client.Connect(ctx)
 	if err != nil {
+		log.Printf("Error connecting to MongoDB: %v\n", err)
 		return nil, err
 	}
+	log.Println("MongoDB client connected.")
 
-	// Ping the primary
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+	log.Println("Pinging MongoDB primary node (timeout 10s)...")
+	// Use a new context for ping, as the previous one might be near its deadline
+	pingCtx, pingCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer pingCancel()
+	if err := client.Ping(pingCtx, readpref.Primary()); err != nil {
+		log.Printf("Error pinging MongoDB: %v\n", err)
+		// Optionally, you might want to disconnect the client here if ping fails
+		// client.Disconnect(context.TODO())
 		return nil, err
 	}
 	log.Println("Successfully connected and pinged MongoDB.")
