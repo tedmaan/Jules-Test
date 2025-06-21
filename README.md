@@ -5,7 +5,8 @@ This is a sample Go application using the Gin framework that connects to a Mongo
 ## Prerequisites
 
 - Go (version 1.21 or higher recommended)
-- MongoDB instance (local or cloud-based like MongoDB Atlas)
+- Docker and Docker Compose (for local MongoDB setup)
+- Access to a MongoDB instance (either local via Docker or cloud-based like MongoDB Atlas)
 
 ## Setup
 
@@ -32,19 +33,35 @@ This is a sample Go application using the Gin framework that connects to a Mongo
     MONGODB_URI="your_mongodb_connection_string_here"
     ```
     Replace `"your_mongodb_connection_string_here"` with your actual MongoDB URI.
-    For example:
-    - Local MongoDB: `MONGODB_URI="mongodb://localhost:27017/mydatabase"`
-    - MongoDB Atlas: `MONGODB_URI="mongodb+srv://<username>:<password>@<cluster-url>/<database_name>?retryWrites=true&w=majority"`
+
+    **For Local Development (using Docker):**
+    The `docker-compose.yml` file included in this project will set up a local MongoDB container.
+    The default URI for this local instance is:
+    `MONGODB_URI="mongodb://localhost:27017/mydatabase"`
+
+    If you modify `docker-compose.yml` to include a username and password (e.g., `MONGO_INITDB_ROOT_USERNAME: myuser`, `MONGO_INITDB_ROOT_PASSWORD: mypassword`), your URI would look like:
+    `MONGODB_URI="mongodb://myuser:mypassword@localhost:27017/mydatabase?authSource=admin"`
+
+    **For Cloud MongoDB (e.g., MongoDB Atlas):**
+    `MONGODB_URI="mongodb+srv://<username>:<password>@<cluster-url>/<database_name>?retryWrites=true&w=majority"`
 
 ## Running the Application
 
-1.  **Start the application:**
+1.  **(Optional) Start Local MongoDB Container:**
+    If you're using the local Docker setup for MongoDB, navigate to the project root and run:
+    ```bash
+    docker-compose up -d
+    ```
+    This will start a MongoDB container in detached mode. The `-d` flag runs it in the background.
+    To stop it later: `docker-compose down`
+
+2.  **Start the Go application:**
     ```bash
     go run main.go
     ```
     The application will start, and you should see a log message indicating a successful connection to MongoDB. By default, the server runs on `0.0.0.0:8080`.
 
-2.  **Test the endpoints:**
+3.  **Test the endpoints:**
     *   **Ping server:** Open your browser or use a tool like `curl` to access:
         `http://localhost:8080/ping`
         You should receive:
